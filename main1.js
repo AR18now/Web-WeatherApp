@@ -20,36 +20,62 @@ async function handleChatInput() {
     displayMessage('You', chatInput);
     document.getElementById('chat-input').value = '';
 
-    // Check if the input contains "weather"
-    if (!chatInput.toLowerCase().includes("weather")) {
-        displayMessage('Chatbot', "I can only answer weather-related queries.");
-        return;
-    }
+    // Check for keywords in the user's input
+    const lowerCaseInput = chatInput.toLowerCase();
+    
+    let weatherData;
+    let cityInput;
 
-    // If it includes "weather," ask for the city
-    displayMessage('Chatbot', "For which city do you want to know the weather?");
-    const cityInput = await getCityInput(); // Await user input for the city
+   
 
-    if (!cityInput) {
-        displayMessage('Chatbot', 'You did not provide a city.');
-        return;
-    }
 
-    // Fetch weather data from OpenWeather API
-    const weatherData = await fetchWeather(cityInput);
-    if (weatherData) {
-        displayMessage('Chatbot', `Weather in ${cityInput}: ${weatherData}`);
+
+
+    const cityMatch = lowerCaseInput.match(/in\s+([a-zA-Z\s]+)/);
+    if(!cityInput && !weatherData && !cityMatch)
+        {
+            displayMessage('Chatbot', "I only answer weather-related queries.");
+                return;
+        }
+    if (cityMatch) {
+        cityInput = cityMatch[1].trim(); // Capture the city name from the input
     } else {
-        displayMessage('Chatbot', 'Sorry, I could not fetch the weather details.');
+        // If no city is mentioned, you can respond or exit here
+        displayMessage('Chatbot', 'Please include a city in your message.');
+        return;
     }
-}
 
-// Function to get city input from the user
-function getCityInput() {
-    return new Promise((resolve) => {
-        const cityInput = prompt("Please enter the city name:");
-        resolve(cityInput ? cityInput.trim() : null);
-    });
+    if (lowerCaseInput.includes("weather")) {
+        weatherData = await fetchWeather(cityInput);
+        if (weatherData) {
+            displayMessage('Chatbot', `Weather in ${cityInput}: Temperature: ${weatherData.temperature} °C, Humidity: ${weatherData.humidity}%, Weather: ${weatherData.description}, Wind Speed: ${weatherData.wind_speed} m/s`);
+        } else {
+            displayMessage('Chatbot', 'Sorry, I could not fetch the weather details.');
+        }
+    } else if (lowerCaseInput.includes("temperature")) {
+        weatherData = await fetchWeather(cityInput);
+        if (weatherData) {
+            displayMessage('Chatbot', `Temperature in ${cityInput}: ${weatherData.temperature} °C`);
+        } else {
+            displayMessage('Chatbot', 'Sorry, I could not fetch the weather details.');
+        }
+    } else if (lowerCaseInput.includes("humidity")) {
+        weatherData = await fetchWeather(cityInput);
+        if (weatherData) {
+            displayMessage('Chatbot', `Humidity in ${cityInput}: ${weatherData.humidity}%`);
+        } else {
+            displayMessage('Chatbot', 'Sorry, I could not fetch the weather details.');
+        }
+    } else if (lowerCaseInput.includes("wind speed")) {
+        weatherData = await fetchWeather(cityInput);
+        if (weatherData) {
+            displayMessage('Chatbot', `Wind Speed in ${cityInput}: ${weatherData.wind_speed} m/s`);
+        } else {
+            displayMessage('Chatbot', 'Sorry, I could not fetch the weather details.');
+        }
+    } else {
+        displayMessage('Chatbot', "I only answer weather-related queries.");
+    }
 }
 
 // Fetch weather data from OpenWeather API
@@ -63,7 +89,12 @@ async function fetchWeather(city) {
             throw new Error("Network response was not ok");
         }
         const data = await response.json();
-        return `Temperature: ${data.main.temp} °C, Humidity: ${data.main.humidity}%, Weather: ${data.weather[0].description}`;
+        return {
+            temperature: data.main.temp,
+            humidity: data.main.humidity,
+            description: data.weather[0].description,
+            wind_speed: data.wind.speed,
+        };
     } catch (error) {
         console.error('Error fetching weather data:', error);
         return null;
@@ -82,12 +113,16 @@ function displayMessage(sender, message) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+
 // Forecast Table Logic
+let forecastData = []; // Declare forecastData globally to be accessed by filters
+
 document.getElementById('get-weather-btn').addEventListener('click', async () => {
     const cityInput = document.getElementById('city-input').value.trim();
     if (cityInput) {
-        const forecastData = await fetchForecast(cityInput);
-        if (forecastData) {
+        const data = await fetchForecast(cityInput);
+        if (data) {
+            forecastData = data; // Assign the fetched forecast data to the global variable
             renderForecastTable(forecastData);
         } else {
             alert('Could not fetch the weather data.');
@@ -131,21 +166,6 @@ function renderForecastTable(forecastData) {
 }
 
 // Forecast Data Placeholder
-const forecastData = [
-    { day: 'Day 1', temperature: 22, weather: { main: 'Clear' } },
-    { day: 'Day 2', temperature: 24, weather: { main: 'Rain' } },
-    { day: 'Day 3', temperature: 23, weather: { main: 'Clear' } },
-    { day: 'Day 4', temperature: 25, weather: { main: 'Rain' } },
-    { day: 'Day 5', temperature: 26, weather: { main: 'Clear' } },
-    { day: 'Day 6', temperature: 27, weather: { main: 'Rain' } },
-    { day: 'Day 7', temperature: 28, weather: { main: 'Clear' } },
-    { day: 'Day 8', temperature: 29, weather: { main: 'Clear' } },
-    { day: 'Day 9', temperature: 30, weather: { main: 'Rain' } },
-    { day: 'Day 10', temperature: 31, weather: { main: 'Clear' } },
-    { day: 'Day 11', temperature: 32, weather: { main: 'Rain' } },
-    { day: 'Day 12', temperature: 33, weather: { main: 'Clear' } },
-];
-
 let currentPage = 0;
 const rowsPerPage = 10;
 
@@ -159,7 +179,7 @@ function renderTable(data) {
 
     paginatedData.forEach(entry => {
         const row = document.createElement('tr');
-        row.innerHTML = `<td>${entry.day}</td><td>${entry.temperature} °C</td>`;
+        row.innerHTML = `<td>${new Date(entry.dt_txt).toDateString()}</td><td>${entry.main.temp} °C</td>`;
         forecastBody.appendChild(row);
     });
 
@@ -190,7 +210,7 @@ function addFilterButtons() {
     const ascButton = document.createElement('button');
     ascButton.innerText = 'Sort Temperatures Ascending';
     ascButton.onclick = () => {
-        const sortedData = [...forecastData].sort((a, b) => a.temperature - b.temperature);
+        const sortedData = [...forecastData].sort((a, b) => a.main.temp - b.main.temp);
         renderTable(sortedData);
     };
     filterButtons.appendChild(ascButton);
@@ -199,7 +219,7 @@ function addFilterButtons() {
     const rainButton = document.createElement('button');
     rainButton.innerText = 'Filter Rainy Days';
     rainButton.onclick = () => {
-        const rainyDays = forecastData.filter(entry => entry.weather.main.toLowerCase() === 'rain');
+        const rainyDays = forecastData.filter(entry => entry.weather[0].main.toLowerCase() === 'rain');
         renderTable(rainyDays);
     };
     filterButtons.appendChild(rainButton);
@@ -208,7 +228,7 @@ function addFilterButtons() {
     const highestTempButton = document.createElement('button');
     highestTempButton.innerText = 'Show Highest Temperature';
     highestTempButton.onclick = () => {
-        const highest = forecastData.reduce((max, entry) => (entry.temperature > max.temperature ? entry : max), forecastData[0]);
+        const highest = forecastData.reduce((max, entry) => (entry.main.temp > max.main.temp ? entry : max), forecastData[0]);
         renderTable([highest]);
     };
     filterButtons.appendChild(highestTempButton);
@@ -217,12 +237,11 @@ function addFilterButtons() {
     const descButton = document.createElement('button');
     descButton.innerText = 'Sort Temperatures Descending';
     descButton.onclick = () => {
-        const sortedData = [...forecastData].sort((a, b) => b.temperature - a.temperature);
+        const sortedData = [...forecastData].sort((a, b) => b.main.temp - a.main.temp);
         renderTable(sortedData);
     };
     filterButtons.appendChild(descButton);
 }
 
 // Initial render
-renderTable(forecastData);
 addFilterButtons();
