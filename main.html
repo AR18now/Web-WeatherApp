@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App Dashboard</title>
+    <link rel="stylesheet" href="main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="app-title">Weather App</div>
+            <div class="menu-item" id="dashboard">Dashboard</div>
+            <div class="menu-item" id="tables">Tables</div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header with search bar and user profile -->
+            <div class="header">
+                <input type="text" id="city-input" class="search-bar" placeholder="Enter city name...">
+                <button id="get-weather-btn">Get Weather</button>
+                <div class="user-profile">User Profile</div>
+                <div class="unit-toggle">
+                    <button id="celsius-btn" class="unit-btn active">°C</button>
+                    <button id="fahrenheit-btn" class="unit-btn">°F</button>
+                </div>
+            </div>
+
+            <!-- Weather Data Section -->
+            <div class="weather-data" id="weatherData">
+                <h2>Current Weather in <span id="city-name"></span></h2>
+                <div class="weather-details">
+                    <p>Temperature: <span id="temperature"></span> °C</p>
+                    <p>Humidity: <span id="humidity"></span>%</p>
+                    <p>Wind Speed: <span id="wind-speed"></span> m/s</p>
+                    <p>Description: <span id="weather-description"></span></p>
+                    <img id="weather-icon" src="" alt="Weather Icon" class="fade-in">
+                </div>
+            </div>
+
+            <!-- Forecast Section -->
+            <div class="forecast-section">
+                <h2>5-Day Forecast</h2>
+                <div id="forecast-cards" class="forecast-cards">
+                    <!-- Forecast data will be appended here -->
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <canvas id="temperatureBarChart" width="300" height="150"></canvas>
+                <canvas id="weatherConditionDoughnutChart" width="300" height="150"></canvas>
+                <canvas id="temperatureLineChart" width="300" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading-spinner" class="loading-spinner">Loading...</div>
+
+    <script type="module" src="main.js"></script>
+    <script>
+        // Navigation between pages
+        document.getElementById("tables").addEventListener("click", function() {
+            window.location.href = "main1.html";
+        });
+        document.getElementById("dashboard").addEventListener("click", function() {
+            window.location.href = "main.html";
+        });
+    </script>
+</body>
+</html>

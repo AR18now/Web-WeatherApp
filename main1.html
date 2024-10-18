@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App Dashboard - Chatbot</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="app-title">Weather App</div>
+            <div class="menu-item" id="dashboard">Dashboard</div>
+            <div class="menu-item" id="tables">Tables</div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header with search bar and user profile -->
+            <header class="header">
+                <input type="text" id="city-input" class="search-bar" placeholder="Enter city name...">
+                <button id="get-weather-btn">Get Weather</button>
+                <div class="user-profile">User Profile</div>
+            </header>
+
+            <!-- Weather Data Section -->
+            <section class="weather-data">
+                <h2>Temperature Forecast</h2>
+                <table id="forecast-table">
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            <th>Temperature (°C)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="forecast-body">
+                        <!-- Forecast data will be populated here -->
+                    </tbody>
+                </table>
+
+                <!-- Filter Buttons -->
+                <div id="filter-buttons"></div>
+
+                <div id="pagination">
+                    <button id="prev-btn">Previous</button>
+                    <button id="next-btn">Next</button>
+                </div>
+            </section>
+
+            <!-- Chatbot Section -->
+            <section class="chatbot-section">
+                <h2>Chat with Us!</h2>
+                <div id="chat-container" class="chat-container">
+                    <!-- Chat messages will appear here -->
+                </div>
+                <input type="text" id="chat-input" class="chat-input" placeholder="Ask me about the weather...">
+                <button id="chat-input-btn">Send</button>
+            </section>
+        </main>
+    </div>
+    <script type="module" src="main1.js"></script>
+</body>
+</html>
